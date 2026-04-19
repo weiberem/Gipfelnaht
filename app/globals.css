@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-cream: #F5F1EA;
+    --color-cream-warm: #EDE6D8;
+    --color-forest: #1F3A2E;
+    --color-forest-dark: #0D1F1A;
+    --color-terracotta: #B8694A;
+    --color-lake: #2E5F7A;
+    --color-night: #D4B16A;
+    --color-stone: #6B6B6B;
+    --color-border: #D8D2C4;
+  }
+
+  html {
+    color-scheme: light;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--color-cream);
+    color: var(--color-forest-dark);
+    font-feature-settings: 'ss01', 'cv11';
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-serif tracking-tight;
+    color: var(--color-forest-dark);
+  }
+
+  ::selection {
+    background: var(--color-terracotta);
+    color: var(--color-cream);
+  }
+
+  a {
+    text-underline-offset: 3px;
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--color-lake);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-[1200px] px-5 md:px-8;
+  }
+
+  .container-narrow {
+    @apply mx-auto w-full max-w-[880px] px-5 md:px-8;
+  }
+
+  .btn-base {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-5 py-3 font-sans text-sm font-medium transition-all;
+    @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lake;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-primary {
+    @apply btn-base bg-forest text-cream hover:bg-forest-dark;
+  }
+
+  .btn-terracotta {
+    @apply btn-base text-cream;
+    background: var(--color-terracotta);
+  }
+  .btn-terracotta:hover {
+    filter: brightness(0.92);
+  }
+
+  .btn-ghost {
+    @apply btn-base bg-transparent text-forest border border-border hover:bg-cream-warm;
+  }
+
+  .card {
+    @apply rounded-lg border bg-white shadow-card;
+    border-color: var(--color-border);
+  }
+
+  .card-warm {
+    @apply rounded-lg border shadow-card;
+    background: var(--color-cream-warm);
+    border-color: var(--color-border);
+  }
+
+  .chip {
+    @apply inline-flex items-center rounded-md border px-2.5 py-1 text-xs font-medium;
+    border-color: var(--color-border);
+    background: #fff;
+    color: var(--color-forest);
+  }
+
+  .chip-filled {
+    @apply inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium;
+    background: var(--color-forest);
+    color: var(--color-cream);
+  }
+
+  .nightrepair-badge {
+    @apply inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold uppercase tracking-wider;
+    background: color-mix(in srgb, var(--color-night) 18%, transparent);
+    color: var(--color-forest-dark);
+    border: 1px solid color-mix(in srgb, var(--color-night) 55%, transparent);
+  }
+
+  .photo-placeholder {
+    @apply relative flex h-full w-full items-center justify-center overflow-hidden;
+    background: linear-gradient(135deg, #E5DDCE 0%, #CFC5B1 100%);
+  }
+  .photo-placeholder::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(45deg, rgba(255,255,255,0.06) 25%, transparent 25%),
+      linear-gradient(-45deg, rgba(255,255,255,0.06) 25%, transparent 25%);
+    background-size: 24px 24px;
+    pointer-events: none;
+  }
+
+  .photo-placeholder-note {
+    @apply pointer-events-none absolute bottom-2 left-2 right-2 rounded px-2 py-1 text-[10px] font-mono leading-tight text-cream;
+    background: color-mix(in srgb, var(--color-forest-dark) 85%, transparent);
+  }
+
+  .prose-gipfel {
+    @apply max-w-prose text-[15.5px] leading-[1.7];
+    color: var(--color-forest-dark);
+  }
+  .prose-gipfel h2 {
+    @apply mt-10 mb-3 text-2xl md:text-3xl;
+  }
+  .prose-gipfel h3 {
+    @apply mt-8 mb-2 text-xl;
+  }
+  .prose-gipfel p {
+    @apply my-4;
+  }
+  .prose-gipfel ul {
+    @apply my-4 list-disc pl-5 space-y-1;
+  }
+  .prose-gipfel a {
+    color: var(--color-lake);
+    text-decoration: underline;
+  }
+
+  .section {
+    @apply py-14 md:py-20;
+  }
+
+  .section-tight {
+    @apply py-10 md:py-14;
+  }
+
+  .hero-gradient {
+    background:
+      linear-gradient(180deg, rgba(13,31,26,0.55) 0%, rgba(13,31,26,0.35) 50%, rgba(13,31,26,0.65) 100%),
+      linear-gradient(120deg, #2b4a3c 0%, #1f3a2e 50%, #0d1f1a 100%);
+  }
+
+  .night-gradient {
+    background: linear-gradient(160deg, #0D1F1A 0%, #1F3A2E 45%, #2b4a3c 100%);
+    position: relative;
+  }
+  .night-gradient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 18% 22%, rgba(212,177,106,0.14) 0%, transparent 50%),
+      radial-gradient(circle at 80% 60%, rgba(212,177,106,0.08) 0%, transparent 55%);
+    pointer-events: none;
+  }
+}
+
+/* Leaflet fix: override default icon shadows to fit our palette */
+.leaflet-container {
+  font-family: inherit;
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 8px !important;
+  box-shadow: 0 2px 12px rgba(13,31,26,0.15) !important;
+}

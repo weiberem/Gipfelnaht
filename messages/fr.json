@@ -1,0 +1,14 @@
+{
+  "_note": "Gerüst. In Phase 1 fallen unübersetzte Keys auf englische Strings zurück.",
+  "nav": {
+    "partner": "Trouver un partenaire",
+    "nightrepair": "Nightrepair",
+    "angebot": "Ce que nous réparons",
+    "nachhaltigkeit": "Durabilité",
+    "howItWorks": "Comment ça marche",
+    "becomePartner": "Devenir partenaire",
+    "about": "À propos",
+    "faq": "FAQ",
+    "contact": "Contact"
+  }
+}

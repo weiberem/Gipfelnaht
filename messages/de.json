@@ -1,0 +1,48 @@
+{
+  "nav": {
+    "partner": "Partner finden",
+    "nightrepair": "Nightrepair",
+    "angebot": "Was reparieren wir?",
+    "nachhaltigkeit": "Nachhaltigkeit",
+    "howItWorks": "So funktioniert's",
+    "becomePartner": "Partner werden",
+    "about": "Über uns",
+    "faq": "FAQ",
+    "contact": "Kontakt"
+  },
+  "home": {
+    "heroTitle": "Deine Ausrüstung.\nHeute gebracht, morgen getragen.",
+    "heroSubtitle": "Finde Näh-Spezialist:innen in den Schweizer Alpen, die deine Bergausrüstung schnell und fachgerecht reparieren.",
+    "ctaFindPartner": "Spezialist:in finden",
+    "ctaNightrepair": "Was ist Nightrepair?",
+    "trustLine": "Handwerk aus den Alpen · Nachhaltig · Schweizer Qualität"
+  },
+  "search": {
+    "town": "Ort oder PLZ",
+    "townPlaceholder": "z.B. Interlaken, 3800",
+    "what": "Was?",
+    "nightrepair": "Nur Nightrepair",
+    "submit": "Jetzt finden"
+  },
+  "nightrepair": {
+    "badge": "Nightrepair",
+    "tagline": "Bis 18:30 bringen. Ab 07:00 wieder abholen."
+  },
+  "footer": {
+    "platform": "Plattform",
+    "forPartners": "Für Partner",
+    "legal": "Rechtliches",
+    "contact": "Kontakt",
+    "imprint": "Impressum",
+    "privacy": "Datenschutz",
+    "terms": "AGB",
+    "copy": "Gipfelnaht — Handwerk aus den Alpen."
+  },
+  "common": {
+    "readMore": "Mehr erfahren",
+    "viewAll": "Alle ansehen",
+    "contactPartner": "Auftrag anfragen",
+    "compare": "Vergleichen",
+    "back": "Zurück"
+  }
+}
