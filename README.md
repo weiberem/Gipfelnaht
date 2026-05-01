@@ -1,12 +1,13 @@
 # Gipfelnaht
 
-> Webseite für ein Näh-Atelier — Bergsport-Reparaturen in Grindelwald.
+> Webseite für ein Näh-Atelier — Bergsport-Reparaturen in Interlaken.
 > **Deine Ausrüstung. Heute gebracht, morgen getragen.**
 
 Single-Site für ein einzelnes Atelier (kein Marktplatz, keine Partnerliste).
-Daunenjacken, Hardshells, Rucksäcke, Zelte werden lokal in Grindelwald
-repariert. Standard-Turnaround 24–48 h. Optional Nightrepair (Annahme bis
-18:30, Abholung ab 07:00, +CHF 25).
+Daunenjacken, Hardshells, Rucksäcke, Zelte werden lokal in Interlaken
+repariert — für das ganze Berner Oberland (Grindelwald, Lauterbrunnen,
+Wengen, Mürren). Standard-Turnaround 24–48 h. Optional Nightrepair
+(Annahme bis 18:30, Abholung ab 07:00, +CHF 25).
 
 ---
 
@@ -290,9 +291,10 @@ Vor dem Go-Live:
       gegeben dank statischer Seiten und cookie-freier Analytics.
 - [ ] **sitemap.xml** und **robots.txt** sind automatisch unter
       `/sitemap.xml` und `/robots.txt` erreichbar.
-- [ ] **lokale Keywords**: "Jacke reparieren Grindelwald",
-      "Daunenjacke flicken Berner Oberland", "Outdoor Reparatur Grindelwald".
-      Sind in den Meta-Tags und Page-Headlines verteilt.
+- [ ] **lokale Keywords**: "Jacke reparieren Interlaken",
+      "Daunenjacke flicken Berner Oberland", "Outdoor Reparatur Interlaken
+      Grindelwald Lauterbrunnen". Sind in den Meta-Tags und Page-Headlines
+      verteilt.
 
 ---
 
@@ -304,7 +306,7 @@ müssen — sie tauchen im Code als Kommentar `TODO:` auf:
 - **UID/MwSt-Nummer** im Impressum: aktuell Platzhalter (`CHE-XXX.XXX.XXX`).
 - **Echte Telefonnummer und WhatsApp-Nummer** in `content/atelier.ts`
   setzen (aktuell Platzhalter).
-- **Echte Geokoordinaten** prüfen (`lat`, `lng`). Aktuell: Grindelwald-Zentrum.
+- **Echte Geokoordinaten** prüfen (`lat`, `lng`). Aktuell: Interlaken-Zentrum (Höheweg).
 - **Eröffnungsdatum / `founded`** und `yearsExperience` an die echte Bio
   anpassen.
 - **OG-Image** muss noch erstellt werden (siehe SEO-Checkliste).
