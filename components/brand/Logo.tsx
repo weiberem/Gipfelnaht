@@ -1,3 +1,4 @@
+import { atelier } from '@/content/atelier';
 import { cn } from '@/lib/utils';
 
 interface LogoProps {
@@ -29,7 +30,7 @@ export function Logo({ location, size = 'md', className, tone = 'default' }: Log
         aria-hidden="true"
         className="shrink-0"
       >
-        {/* Mountain peak */}
+        {/* Bergzacken */}
         <path
           d="M4 38 L18 14 L26 26 L34 10 L44 38 Z"
           stroke="currentColor"
@@ -38,7 +39,7 @@ export function Logo({ location, size = 'md', className, tone = 'default' }: Log
           fill="none"
           className={color}
         />
-        {/* Needle/thread running through the base */}
+        {/* Faden, der durch den Sockel läuft */}
         <path
           d="M8 41 C 16 37, 24 45, 32 41 C 38 38, 42 41, 44 41"
           stroke="currentColor"
@@ -47,7 +48,7 @@ export function Logo({ location, size = 'md', className, tone = 'default' }: Log
           fill="none"
           className={tone === 'light' ? 'text-night' : 'text-terracotta'}
         />
-        {/* Needle eye */}
+        {/* Nadelöhr */}
         <circle
           cx="44"
           cy="41"
@@ -59,7 +60,7 @@ export function Logo({ location, size = 'md', className, tone = 'default' }: Log
 
       <span className="flex flex-col leading-none">
         <span className={cn('font-serif font-semibold tracking-tight', s.wordmark, color)}>
-          Gipfelnaht
+          {atelier.name}
         </span>
         {location && (
           <span

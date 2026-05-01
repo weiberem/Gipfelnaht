@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { platform } from '@/config/platform';
+import { atelier } from '@/content/atelier';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -7,9 +7,9 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/api/', '/admin', '/mein-atelier', '/kunde', '/login', '/register'],
+        disallow: ['/api/'],
       },
     ],
-    sitemap: `${platform.siteUrl}/sitemap.xml`,
+    sitemap: `${atelier.siteUrl}/sitemap.xml`,
   };
 }

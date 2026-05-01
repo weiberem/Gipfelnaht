@@ -1,9 +1,12 @@
 # Gipfelnaht
 
-> Plattform für Näh-Reparaturen von Bergsport-Ausrüstung in den Schweizer Alpen.
-> **Heute bringen. Morgen tragen.**
+> Webseite für ein Näh-Atelier — Bergsport-Reparaturen in Grindelwald.
+> **Deine Ausrüstung. Heute gebracht, morgen getragen.**
 
-Lokale Näh-Spezialist:innen reparieren Daunenjacken, Hardshells, Zelte & Co. — schnell, fachgerecht, nachhaltig. Kund:innen finden Partner über die Plattform, vergleichen Spezialisierungen und geben Reparaturen direkt beim Atelier in Auftrag.
+Single-Site für ein einzelnes Atelier (kein Marktplatz, keine Partnerliste).
+Daunenjacken, Hardshells, Rucksäcke, Zelte werden lokal in Grindelwald
+repariert. Standard-Turnaround 24–48 h. Optional Nightrepair (Annahme bis
+18:30, Abholung ab 07:00, +CHF 25).
 
 ---
 
@@ -12,69 +15,55 @@ Lokale Näh-Spezialist:innen reparieren Daunenjacken, Hardshells, Zelte & Co. �
 1. [Tech-Stack](#tech-stack)
 2. [Setup lokal](#setup-lokal)
 3. [Projektstruktur](#projektstruktur)
-4. [Partner pflegen (Content-as-Code)](#partner-pflegen-content-as-code)
-5. [Design-System](#design-system)
-6. [Preise, Texte, Farben ändern](#preise-texte-farben-ändern)
+4. [Inhalte ändern (Content-as-Code)](#inhalte-ändern-content-as-code)
+5. [Nightrepair an- oder ausschalten](#nightrepair-an--oder-ausschalten)
+6. [Bilder & Fotos](#bilder--fotos)
 7. [API-Routen](#api-routen)
 8. [Deployment auf Vercel](#deployment-auf-vercel)
-9. [Architektur-Übersicht](#architektur-übersicht)
-10. [Phase-2-Roadmap](#phase-2-roadmap)
-11. [TODOs / offene Entscheidungen](#todos--offene-entscheidungen)
+9. [Umgebungsvariablen](#umgebungsvariablen)
+10. [SEO-Checkliste](#seo-checkliste)
+11. [TODOs](#todos)
 
 ---
 
 ## Tech-Stack
 
-| Ebene            | Technologie                                              |
-|------------------|----------------------------------------------------------|
-| Framework        | Next.js 14 (App Router) + TypeScript strict             |
-| Styling          | Tailwind CSS + CSS-Variablen, selektiv Radix-UI-Primitives |
-| Forms            | React Hook Form + Zod                                    |
-| i18n             | next-intl (DE primär, EN sekundär, FR/IT als Gerüst)     |
-| E-Mail           | Resend (Inquiry an Partner + CC Plattform + Kunden-Bestätigung) |
-| Karten           | Leaflet + OpenStreetMap (DSG-freundlich, keine Google-Dependency) |
-| PDF              | @react-pdf/renderer (dynamische Reparatur-Tags pro Partner) |
-| Analytics        | Plausible / Umami (cookie-frei — deshalb kein Cookie-Banner) |
-| Deployment       | Vercel                                                   |
+| Ebene          | Technologie                                       |
+|----------------|---------------------------------------------------|
+| Framework      | Next.js 14 (App Router) + TypeScript strict       |
+| Styling        | Tailwind CSS, eigene minimale Komponenten         |
+| Formular       | React Hook Form + Zod                             |
+| Mailversand    | Resend (transaktional)                            |
+| Karte          | Leaflet + OpenStreetMap (kein Google)             |
+| PDF            | @react-pdf/renderer + qrcode                      |
+| Analytics      | Plausible (optional, cookie-frei)                 |
+| Hosting        | Vercel                                            |
+
+Bewusst **nicht** dabei: Datenbank, Login, Backoffice, Online-Bezahlung.
+Alle Atelier-Daten leben als TypeScript-Konstanten im Repo. Eine Änderung
+am Inhalt ist immer ein Pull Request, kein Datenbank-Update.
 
 ---
 
 ## Setup lokal
 
-### Voraussetzungen
-- Node.js 20+
-- npm 10+
-
-### Schritte
-
 ```bash
-# Repo klonen
-git clone <repo-url> gipfelnaht
-cd gipfelnaht
-
-# Dependencies installieren
+# Node 20+
 npm install
-
-# Umgebungsvariablen setzen
-cp .env.example .env.local
-# und RESEND_API_KEY etc. eintragen (für Entwicklung nicht zwingend —
-# ohne Schlüssel loggt die Inquiry einfach in die Konsole)
-
-# Dev-Server starten
-npm run dev
+cp .env.example .env.local        # Resend-Key eintragen, optional
+npm run dev                       # http://localhost:3000
 ```
 
-Browser öffnen: <http://localhost:3000>
-
-### Nützliche Skripte
+Nützliche Skripte:
 
 ```bash
-npm run dev        # Next dev server
-npm run build      # Production build
-npm run start      # Start production build
-npm run typecheck  # Nur TypeScript (tsc --noEmit)
-npm run lint       # ESLint
+npm run typecheck                 # tsc --noEmit
+npm run lint                      # next lint
+npm run build && npm start        # Production-Smoke-Test
 ```
+
+Das Anfrage-Formular funktioniert auch ohne `RESEND_API_KEY` — es loggt
+die Anfrage dann nur ins Server-Terminal, statt eine Mail zu schicken.
 
 ---
 
@@ -82,133 +71,138 @@ npm run lint       # ESLint
 
 ```
 app/
-  layout.tsx                    # Root-Layout (Fonts, i18n-Provider, JSON-LD)
-  (public)/                     # Öffentliche Routen
-    layout.tsx                    # Public Header + Footer
-    page.tsx                      # Startseite /
-    partner/                      # /partner und /partner/[slug]
-    nightrepair/                  # /nightrepair Landingpage
-    angebot/                      # /angebot — was wird repariert
-    nachhaltigkeit/               # /nachhaltigkeit
-    so-funktionierts/
-    partner-werden/               # Bewerbungsformular
-    ueber-uns/ / faq/ / kontakt/
-    impressum/ / datenschutz/ / agb/
-  (auth)/                       # Phase-2-Platzhalter (login, register)
-  (dashboard)/                  # Phase-2-Platzhalter (admin, kunde, mein-atelier)
-  api/                          # API-Routen
-    inquiry/route.ts
-    partner-application/route.ts
-    tag-pdf/[slug]/route.ts
-  sitemap.ts / robots.ts / not-found.tsx
+  layout.tsx              Root-Layout, Fonts, JSON-LD, Header, Footer
+  page.tsx                Startseite
+  angebot/                Was wir reparieren
+  preise/                 Transparente Preisliste
+  so-funktionierts/       Ablauf in 4 Schritten + Nightrepair
+  ueber-mich/             Lena, Werkstatt, Werkzeuge
+  kontakt/                Anfrageformular + Karte + Adresse
+  impressum/, datenschutz/, agb/
+  api/
+    inquiry/route.ts      POST: Anfrage per Resend
+    tag-pdf/route.ts      GET:  A5-Reparatur-Tag (PDF)
+  sitemap.ts, robots.ts, not-found.tsx, globals.css
 
 components/
-  brand/                        # Logo, NightrepairBadge, SustainabilityCounter
-  layout/                       # Header, Footer, LanguageSwitcher
-  ui/                           # Button, Input, Textarea, Label, Dialog
-  common/                       # PhotoPlaceholder, SpecialtyChip, ServiceIcon,
-                                # PricingTable, BeforeAfterSlider, Phase2Placeholder
-  home/                         # QuickSearch (Startseite)
-  partner/                      # PartnerCard, Map, FilterPanel, ComparisonTable,
-                                # InquiryModal, PartnerExplorer
+  brand/                  Logo, NightrepairBadge, SustainabilityCounter
+  layout/                 Header, Footer
+  contact/                InquiryForm (RHF + Zod), AtelierMap (Leaflet)
+  common/                 PhotoPlaceholder, PricingTable, SpecialtyChip
+  ui/                     Button, Input, Label, Textarea
 
 content/
-  partners/                     # Eine JSON-Datei pro Partner (Source of Truth Phase 1)
-  pages/faq.json
-
-lib/
-  partners.ts                   # Partner-Service (wird in Phase 2 gegen Supabase getauscht)
-  partner-schema.ts             # Zod-Validation für Partner-Dateien
-  inquiries.ts                  # Mail-Versand via Resend
-  pdf-tag.tsx                   # @react-pdf/renderer Dokument
-  taxonomy.ts                   # Specialty/Material/RepairType Labels
-  seo.ts                        # JSON-LD Builders
-  utils.ts                      # cn(), formatCHF()
+  atelier.ts              👈 Atelier-Daten (Adresse, Services, Bio …)
+  pricing.ts              👈 Preisliste
 
 config/
-  brand.ts                      # Markenfarben, Fonts, Logo-Pfad, Tagline
-  platform.ts                   # Betreiber-Daten, Impact-Counter, Partner-Preismodell
-  features.ts                   # Feature-Flags (ENABLE_AUTH etc.)
+  brand.ts                Farben, Fonts, Logo-Pfad
+  platform.ts             Re-Export von atelier (Legacy-Alias)
+  features.ts             Dev-Flags (Foto-Overlay)
 
-types/                          # Partner, Inquiry, Enums
-messages/                       # de.json, en.json (vollständig), fr.json, it.json (Gerüst)
-i18n.ts                         # next-intl Konfiguration
+lib/
+  inquiries.ts            Resend-Wrapper
+  pdf-tag.tsx             @react-pdf-Dokument
+  taxonomy.ts             Labels für Specialties, Materialien, Services
+  seo.ts                  LocalBusiness-JSON-LD
+  utils.ts                cn(), formatCHF, formatPriceRange
+
+types/                    Specialty, Material, ServiceOption, Inquiry
 ```
 
 ---
 
-## Partner pflegen (Content-as-Code)
+## Inhalte ändern (Content-as-Code)
 
-Ein neuer Partner wird als JSON-Datei unter `content/partners/<slug>.json` angelegt und in `lib/partners.ts` im Import-Block ergänzt.
+**Alles, was am Atelier individuell ist**, findet sich in zwei Dateien:
 
-### Neuen Partner hinzufügen
+### `content/atelier.ts`
 
-1. Datei anlegen: `content/partners/dein-slug.json`.
-2. Struktur folgt dem TypeScript-Type `Partner` in `types/partner.ts`. Zod-Schema in `lib/partner-schema.ts` validiert zur Runtime — falsche Felder loggen in Dev eine Fehlermeldung und der Partner wird nicht angezeigt.
-3. Import in `lib/partners.ts` ergänzen:
-   ```ts
-   import deinPartner from '@/content/partners/dein-slug.json';
-   const partnerSources: unknown[] = [mueller, alpennadel, bergfaden, deinPartner];
-   ```
-4. `npm run dev` — der neue Partner erscheint auf `/partner` und unter `/partner/dein-slug`.
-5. Sitemap, Filter und Karte nehmen den Partner automatisch auf.
+Eine grosse Konstante mit Sub-Objekten:
 
-### Partner deaktivieren
+| Feld                                           | Was                                          |
+|------------------------------------------------|----------------------------------------------|
+| `name`, `legalName`, `owner`                   | Atelier-Name, Inhaberin, Rechtsform           |
+| `shortBio`, `bio`                              | Kurz-Slogan + Absätze für /ueber-mich        |
+| `location.*`                                   | Adresse, PLZ, Koordinaten, bediente Orte     |
+| `contact.*`                                    | E-Mail, Telefon, WhatsApp, Instagram         |
+| `languages`                                    | Sprachen, in denen du beraten kannst         |
+| `services.sammelbox.available` etc.            | Welche Übergabe-Optionen aktiv sind          |
+| `services.nightrepair.available`               | Nightrepair an/aus (siehe unten)             |
+| `payment.{twint, card, cash, invoice}`         | Zahlmittel — werden auf /preise und in AGB   |
+|                                                | automatisch ausgegeben                       |
+| `openingHours.{weekdays, saturday, sunday}`    | Öffnungszeiten als Klartext                  |
+| `capacity.typicalTurnaround`                   | "24–48 h" — wird überall referenziert        |
+| `capacity.onHoliday`                           | `null` oder `{ from, to }` für Ferienbanner  |
+| `specialties`                                  | Liste der Spezialitäten (Typ `Specialty[]`)  |
+| `materials`                                    | Liste Materialien (Typ `Material[]`)         |
+| `brandExperience`                              | Marken, mit denen du oft arbeitest           |
+| `excludedItems`                                | Was wir **nicht** reparieren (Sicherheit)    |
+| `sustainability.repairsCompleted` / `co2SavedKg` | Stats für /ueber-mich (manuell pflegen)    |
 
-`"active": false` in der JSON setzen — der Partner verschwindet aus der öffentlichen Liste, Profil-URL bleibt aber routbar (praktisch während Ferien).
+Tipp: TypeScript zwingt dich, zulässige Werte für `specialties` etc. zu
+verwenden — wenn du dich vertippst, scheitert `npm run build`.
 
-### Fotos
+### `content/pricing.ts`
 
-Alle Foto-Pfade zeigen auf `/public/images/placeholders/*`. Ersetze sie durch echte Fotos. Solange nur Platzhalter vorhanden sind, zeigt die `PhotoPlaceholder`-Komponente einen klaren Hinweis ("FOTO BENÖTIGT: …") — in Production dezenter (siehe `config/features.ts`).
+Liste von `PricingItem` mit `type`, `label`, `priceFrom`, `priceTo?`, `note?`.
+Reihenfolge ist die Reihenfolge in der Tabelle. Gruppiert in `pricingGroups`
+nach grobem Bereich (Risse / Reissverschlüsse / Gurte / Daune & Anpassungen).
 
-### Preise
+### Deployment einer Inhaltsänderung
 
-Preise sind Teil der Partner-JSON unter `pricing`. Der Partner pflegt sie selbst (via Change-Request bei dir). In Phase 2 wandert das in ein Partner-Dashboard.
+```
+content/atelier.ts ändern  →  git push  →  Vercel baut neu (~30s)  →  live
+```
 
----
-
-## Design-System
-
-### Farben (als CSS-Variablen in `app/globals.css`)
-
-| Variable              | Hex      | Einsatz                                    |
-|-----------------------|----------|--------------------------------------------|
-| `--color-cream`       | `#F5F1EA`| Basis-Hintergrund                          |
-| `--color-cream-warm`  | `#EDE6D8`| Card-Hintergrund, sanfte Sektionen         |
-| `--color-forest`      | `#1F3A2E`| Primär, Text, Buttons                      |
-| `--color-forest-dark` | `#0D1F1A`| Headlines, Hover-States                    |
-| `--color-terracotta`  | `#B8694A`| CTA-Akzent                                 |
-| `--color-lake`        | `#2E5F7A`| Sekundär-Akzent, Links                     |
-| `--color-night`       | `#D4B16A`| **Nur** für Nightrepair-Elemente           |
-| `--color-stone`       | `#6B6B6B`| Sekundärtext                               |
-| `--color-border`      | `#D8D2C4`| Ränder                                     |
-
-### Typografie
-
-- **Fraunces** (via `next/font/google`) — Headlines, Logo
-- **Inter** (via `next/font/google`) — Body
-
-### Komponenten-Konventionen
-
-- Abgerundete Ecken: `6–10 px` (solid, nicht "weich")
-- Dezente Schatten: `shadow-card`, `shadow-hover`
-- Icons ausschliesslich **Lucide**
-- `NightrepairBadge` ist die einzige Komponente, die `--color-night` verwendet — konsequent nur für Nightrepair
+Kein CMS, kein Login, keine Datenbank, kein Risiko, dass jemand falsche
+Preise online stellt.
 
 ---
 
-## Preise, Texte, Farben ändern
+## Nightrepair an- oder ausschalten
 
-| Was                           | Wo                                                                 |
-|-------------------------------|--------------------------------------------------------------------|
-| Markenname, Tagline, Farben   | `config/brand.ts` + `app/globals.css`                              |
-| Betreiber-Kontakt, Impressum  | `config/platform.ts`                                               |
-| Impact-Counter (Phase 1)      | `config/platform.ts` → `impact.*`                                  |
-| Partner-Onboarding-Preise     | `config/platform.ts` → `partnerPricing`                            |
-| Partner-Daten / Preise        | `content/partners/<slug>.json`                                     |
-| FAQ-Einträge                  | `content/pages/faq.json`                                           |
-| Texte (DE/EN)                 | `messages/de.json`, `messages/en.json`                             |
-| Feature-Flags                 | `config/features.ts`                                               |
+In `content/atelier.ts`:
+
+```ts
+services: {
+  nightrepair: {
+    available: false,  // ← auf false setzen
+    // restliche Felder können bleiben
+  },
+}
+```
+
+Das schaltet automatisch:
+
+- den Nightrepair-Block auf der Startseite aus
+- die Nightrepair-Sektion auf /so-funktionierts aus
+- die Nightrepair-Option im Anfrage-Formular aus
+- den Nightrepair-Aufpreis-Block auf /preise aus
+- die Nightrepair-Erwähnung im PDF aus
+- den Nightrepair-Absatz in den AGB aus
+
+Es bleibt **nichts** im UI, was dann nicht mehr stimmen würde.
+
+---
+
+## Bilder & Fotos
+
+Aktuell laufen alle Atelier-Fotos auf `<PhotoPlaceholder hint="…" />`. Im
+Dev-Mode siehst du den Foto-Hinweis als kleines Schild auf jedem Platzhalter
+("FOTO BENÖTIGT: …"); in Production wird der Hint nur als Alt-Text genutzt.
+
+Für die Live-Version brauchst du:
+
+| Slot                                  | Was                                                         |
+|---------------------------------------|-------------------------------------------------------------|
+| Hero (`/`)                            | Werkstatt-Atmosphäre, Industriemaschine, warme Lampe        |
+| "Über mich kurz" (`/`) und `/ueber-mich` | Lena an der Pfaff, Tageslicht von links                  |
+| `/ueber-mich` Werkstatt-Doppelbild    | Übersicht + Detail einer reparierten Daunenjacke            |
+| `/public/images/og-default.jpg`       | OG-Image für Social Sharing (1200×630)                      |
+
+Foto-Stil: Tageslicht oder warmes Lampenlicht, ruhige Farben (Holz, Stoff,
+Metall), keine Stockfotos. Lieber zwei ehrliche Fotos als zehn glatte.
 
 ---
 
@@ -216,117 +210,106 @@ Preise sind Teil der Partner-JSON unter `pricing`. Der Partner pflegt sie selbst
 
 ### `POST /api/inquiry`
 
-Versendet eine Reparatur-Anfrage. Body validiert via Zod. Verschickt zwei Mails:
+Body (Zod-validiert):
 
-1. An den Partner (mit Kund:in als Reply-To, Plattform im CC)
-2. An die Kund:in als Bestätigung
+```ts
+{
+  name: string;
+  email: string;            // valide E-Mail
+  phone: string;
+  product: 'daunenjacke' | 'hardshell' | 'hose' | 'rucksack' | 'zelt' | 'schlafsack' | 'anderes';
+  description: string;      // ≥ 10 Zeichen
+  preferredService: 'sammelbox' | 'personal-dropoff' | 'pickup' | 'nightrepair';
+  preferredDate?: string;   // ISO-Datum
+  acceptPrivacy: true;
+}
+```
 
-Ohne `RESEND_API_KEY` in der Umgebung wird der Versand nur geloggt — praktisch in der Entwicklung.
+Verschickt zwei Mails über Resend:
 
-### `POST /api/partner-application`
+1. **An das Atelier** (Reply-To = Kunde) — eingehende Anfrage
+2. **An den Kunden** — Bestätigung mit Hinweis "Antwort innerhalb 12 Stunden"
 
-Versendet eine Partner-Bewerbung an `EMAIL_PLATFORM`.
+Wenn `RESEND_API_KEY` nicht gesetzt ist, wird die Anfrage nur geloggt — die
+UI zeigt trotzdem ein Erfolgs-Feedback an (für lokales Testen).
 
-### `GET /api/tag-pdf/[slug]`
+### `GET /api/tag-pdf`
 
-Generiert zur Laufzeit ein A5-PDF-Tag (Vorderseite mit Ausfüll-Feldern, Rückseite mit AGB-Kurzfassung, Preisrahmen, QR-Code zum Partner-Profil). Output: `application/pdf` inline.
-
-### `GET /sitemap.xml`
-
-Automatisch aus `app/sitemap.ts` — umfasst alle statischen Seiten + alle aktiven Partner.
-
-### `GET /robots.txt`
-
-Automatisch aus `app/robots.ts`.
+Erzeugt ein A5-PDF (Vorder- und Rückseite) zum Ausdrucken.
+Vorderseite: Felder zum Ausfüllen + Reparatur-Checkboxen + Service-Auswahl.
+Rückseite: Ablauf, Garantie, Preisrahmen (Top 6), QR-Code zur Kontakt-Seite,
+Nachhaltigkeits-Hinweis. Kann verlinkt oder im Atelier auf Vorrat gedruckt
+werden (z. B. für die Sammelbox).
 
 ---
 
 ## Deployment auf Vercel
 
-1. Vercel-Projekt erstellen, Repo verbinden.
-2. Environment-Variablen setzen (aus `.env.example` übernehmen):
-   - `RESEND_API_KEY`
-   - `EMAIL_FROM` — verifizierte Absenderadresse
-   - `EMAIL_PLATFORM` — CC-Adresse für Monitoring
-   - `NEXT_PUBLIC_SITE_URL` — z.B. `https://gipfelnaht.ch`
-   - (optional) `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`
-3. Build-Kommando: `next build` (Default).
-4. Deploy. Custom-Domain mit CH-Ländercode als Weiche einrichten.
-5. `EMAIL_FROM`-Domain im Resend-Dashboard über SPF/DKIM verifizieren.
+1. Repo bei GitHub einrichten, Branch `main`.
+2. In Vercel "Import Project", als Framework Next.js erkennen lassen.
+3. Umgebungsvariablen aus `.env.example` setzen (siehe nächster Abschnitt).
+4. Deploy. Domain `gipfelnaht.ch` über Vercel-DNS oder einen externen
+   DNS-Anbieter (CNAME auf `cname.vercel-dns.com`) auflösen.
+5. Resend: Domain (`gipfelnaht.ch`) verifizieren — Vercel zeigt die
+   nötigen DKIM/SPF-Einträge an.
+
+Build: `npm run build` (Vercel default).
+Region: Frankfurt (`fra1`) — kürzeste Latenz für Schweizer Besucher:innen.
 
 ---
 
-## Architektur-Übersicht
+## Umgebungsvariablen
 
-### Service-Pattern (wichtig für Phase 2)
+| Variable                       | Pflicht? | Was                                                  |
+|--------------------------------|----------|------------------------------------------------------|
+| `RESEND_API_KEY`               | empfohlen | Sonst keine Mails — nur Logging.                    |
+| `EMAIL_FROM`                   | empfohlen | Verifizierte Absender-Adresse in Resend.            |
+| `EMAIL_PLATFORM`               | empfohlen | Postfach, das Anfragen erhält.                      |
+| `NEXT_PUBLIC_SITE_URL`         | ja        | Für Sitemap, OG-Tags, QR-Code im PDF.                |
+| `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` | nein      | Wenn gesetzt, lädt das Plausible-Skript automatisch. |
 
-Sämtliche Partner-Daten fliessen durch `lib/partners.ts`:
-
-- `getAllPartners()` — alle aktiven Partner
-- `getPartnerBySlug(slug)` — einzelner Partner
-- `getAllPartnerSlugs()` — für `generateStaticParams`
-- `filterPartners(filter)` — Server-Side-Filter
-- `getFeaturedPartners(n)` — für Startseite
-- `getNightrepairPartners()` — für Nightrepair-Landingpage
-
-In Phase 1 lesen diese Funktionen aus JSON-Dateien. In Phase 2 werden nur die Implementierungen gegen Supabase-Queries getauscht — **alle Consumer bleiben unverändert**.
-
-Analog `lib/inquiries.ts`:
-- Phase 1: Resend-Versand
-- Phase 2: zusätzlich Supabase-Insert (Aufträge-Tabelle) + Resend
-
-### Route-Groups
-
-- `app/(public)/*` — öffentliche Seiten, Header+Footer aus `Header.tsx`/`Footer.tsx`
-- `app/(auth)/*` — Placeholder für Login/Register in Phase 2
-- `app/(dashboard)/*` — Placeholder für Admin/Partner/Kunde in Phase 2
-
-Phase-2-Routen sind bewusst angelegt, damit die Navigationsstruktur nicht später umgebaut werden muss.
-
-### i18n
-
-- `next-intl` geladen via `next.config.mjs`-Plugin
-- Messages in `messages/*.json`
-- Default-Locale: **de**
-- Sprachumschalter aktuell dekorativ (alle Locales zeigen DE). Bei Aktivierung müssen Middleware + URL-Präfixe eingerichtet werden.
+`.env.example` zeigt alle Variablen mit kurzen Erklärungen.
 
 ---
 
-## Phase-2-Roadmap
+## SEO-Checkliste
 
-Was kommt, wenn Logins/Payments aktiviert werden:
+Vor dem Go-Live:
 
-1. **Auth**: Supabase Auth, drei Rollen (`admin`, `partner`, `customer`)
-2. **Datenbank**: Supabase Postgres. Migration von JSON → DB:
-   - `partners`-Tabelle mit dem existierenden Partner-Schema
-   - `inquiries`-Tabelle (wird befüllt, sobald `lib/inquiries.ts` auf DB schreibt)
-   - `orders`, `offers`, `reviews`, `partner_applications`
-3. **Zahlungen**: Stripe Connect mit Twint-Payment-Method. Commission-Splits zwischen Plattform und Partner. Webhooks unter `app/api/stripe/webhook/route.ts`.
-4. **Dashboards** (Routen bereits angelegt):
-   - `/mein-atelier` → Partner-Dashboard: Aufträge, Kapazität, Bewertungen, Abrechnung
-   - `/kunde` → Auftragshistorie, gespeicherte Werkstätten, Rechnungen
-   - `/admin` → Plattform-Backoffice, Partner-Verwaltung, Reports
-5. **Bewertungen**: öffentlich sichtbar, Supabase-Tabelle mit Moderation
-6. **Feature-Flags** in `config/features.ts` auf `true` setzen und abhängige Features scharf schalten.
-
----
-
-## TODOs / offene Entscheidungen
-
-Bewusst im Code markiert, Zentrale-Übersicht hier:
-
-- [ ] `config/platform.ts` — Echte Betreiber-Daten (Name, Adresse, UID) ergänzen
-- [ ] Instagram-Account und weitere Social-Links in `config/platform.ts`
-- [ ] Echte Partner-Fotos — Platzhalter unter `/public/images/placeholders/` ersetzen
-- [ ] Impressum: UID / Handelsregister-Eintrag
-- [ ] OG-Image: aktuell keins hinterlegt. Empfohlen: via `@vercel/og` dynamisch pro Partner generieren.
-- [ ] FR/IT-Übersetzungen vervollständigen in `messages/fr.json` und `messages/it.json`
-- [ ] LanguageSwitcher auf Routing umstellen, sobald EN eine eigene URL bekommt
-- [ ] Plausible-Script einbinden, sobald Domain gesetzt ist (`NEXT_PUBLIC_PLAUSIBLE_DOMAIN`)
-- [ ] Gegebenenfalls Photo-Upload im Inquiry-Formular (aktuell Checkbox "Fotos folgen per WhatsApp")
+- [ ] **Google Business Profile** anlegen und mit derselben Adresse pflegen
+      wie in `content/atelier.ts`. Foto, Öffnungszeiten und Webseite hinzufügen.
+- [ ] **OG-Image** unter `public/images/og-default.jpg` ablegen (1200×630).
+- [ ] **Domain bei Resend verifizieren** (DKIM, SPF, DMARC), sonst landen
+      Bestätigungsmails im Spam.
+- [ ] **Plausible** einrichten (optional) und Domain in `.env` eintragen —
+      dann wird der Reichweiten-Hinweis im Datenschutz automatisch ein-
+      geblendet.
+- [ ] **JSON-LD prüfen**: `https://search.google.com/test/rich-results` mit
+      der produktiven URL. Sollte ein gültiges `LocalBusiness`-Schema melden.
+- [ ] **Lighthouse**: 95+ in allen vier Kategorien — fast vom Start weg
+      gegeben dank statischer Seiten und cookie-freier Analytics.
+- [ ] **sitemap.xml** und **robots.txt** sind automatisch unter
+      `/sitemap.xml` und `/robots.txt` erreichbar.
+- [ ] **lokale Keywords**: "Jacke reparieren Grindelwald",
+      "Daunenjacke flicken Berner Oberland", "Outdoor Reparatur Grindelwald".
+      Sind in den Meta-Tags und Page-Headlines verteilt.
 
 ---
 
-## Lizenz
+## TODOs
 
-Proprietär — alle Rechte bei Gipfelnaht. Kein Reuse ohne Einwilligung.
+Pragmatische Annahmen, die für den Produktivbetrieb noch entschieden werden
+müssen — sie tauchen im Code als Kommentar `TODO:` auf:
+
+- **UID/MwSt-Nummer** im Impressum: aktuell Platzhalter (`CHE-XXX.XXX.XXX`).
+- **Echte Telefonnummer und WhatsApp-Nummer** in `content/atelier.ts`
+  setzen (aktuell Platzhalter).
+- **Echte Geokoordinaten** prüfen (`lat`, `lng`). Aktuell: Grindelwald-Zentrum.
+- **Eröffnungsdatum / `founded`** und `yearsExperience` an die echte Bio
+  anpassen.
+- **OG-Image** muss noch erstellt werden (siehe SEO-Checkliste).
+- **Foto-Slots** durch echte Aufnahmen ersetzen — Hinweise findest du in
+  jedem `<PhotoPlaceholder hint="…" />`.
+
+Wenn etwas davon in deine Kontroll-Schleife wandert, ersetze einfach den
+Wert in `content/atelier.ts` und entferne den TODO-Kommentar.

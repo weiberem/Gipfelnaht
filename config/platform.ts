@@ -1,37 +1,19 @@
+/**
+ * Re-export der Atelier-Daten als "platform"-Konstante.
+ *
+ * Historisch hiess die Konfiguration "platform". Seit der Umstellung
+ * auf das Einzel-Atelier ist die Quelle der Wahrheit /content/atelier.ts —
+ * dieser Re-export bleibt nur, damit Imports nicht überall geändert werden
+ * müssen.
+ */
+import { atelier } from '@/content/atelier';
+
 export const platform = {
-  legalName: 'Gipfelnaht — Einzelunternehmen',
-  owner: {
-    name: 'Remy Betreiber', // TODO: Echten Namen des Plattform-Betreibers eintragen
-    address: 'Musterstrasse 1',
-    postalCode: '3800',
-    town: 'Interlaken',
-    canton: 'BE',
-    country: 'Schweiz',
-  },
-  contact: {
-    email: process.env.EMAIL_PLATFORM ?? 'hallo@gipfelnaht.ch',
-    phone: '+41 33 000 00 00', // TODO: Echte Support-Nummer eintragen
-    whatsapp: '+41 79 000 00 00',
-  },
-  siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://gipfelnaht.ch',
+  legalName: atelier.legalName,
+  siteUrl: atelier.siteUrl,
+  contact: atelier.contact,
   social: {
-    instagram: 'https://instagram.com/gipfelnaht',
-    facebook: null,
-    linkedin: null,
-  },
-  // Platzhalter für Nachhaltigkeits-Counter. Phase 2: aus DB aggregiert.
-  impact: {
-    repairsCompleted: 347,
-    co2SavedKg: 8675,
-    activePartners: 3,
-  },
-  // Partner-Onboarding-Kosten (anzeigt auf /partner-werden)
-  partnerPricing: {
-    onboardingFee: 490,
-    monthlyFee: 49,
-    contractMonths: 12,
-    noticeMonths: 3,
-    currency: 'CHF',
+    instagram: atelier.contact.instagram ?? null,
   },
 } as const;
 

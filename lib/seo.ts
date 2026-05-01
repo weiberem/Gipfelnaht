@@ -1,53 +1,57 @@
-import type { Partner } from '@/types';
-import { platform } from '@/config/platform';
-import { brand } from '@/config/brand';
+import { atelier } from '@/content/atelier';
 
-export function localBusinessJsonLd(partner: Partner) {
-  const url = `${platform.siteUrl}/partner/${partner.slug}`;
+/**
+ * LocalBusiness-Schema fürs Root-Layout.
+ * Für lokales SEO entscheidend: Adresse, Geo, openingHours, priceRange.
+ */
+export function localBusinessJsonLd() {
+  const url = atelier.siteUrl;
+
+  const opening: string[] = [];
+  if (atelier.openingHours.weekdays) {
+    // "Di–Fr 14:00–18:30" → "Tu-Fr 14:00-18:30"
+    opening.push('Tu-Fr 14:00-18:30');
+  }
+  if (atelier.openingHours.saturday) {
+    opening.push('Sa 09:00-13:00');
+  }
+
   return {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     '@id': url,
-    name: `${brand.name} ${partner.location.town} — ${partner.businessName}`,
-    alternateName: partner.businessName,
-    description: partner.shortBio,
+    name: atelier.name,
+    alternateName: atelier.legalName,
+    description: atelier.shortBio,
     url,
-    email: partner.contact.email,
-    telephone: partner.contact.phone,
+    email: atelier.contact.email,
+    telephone: atelier.contact.phone,
+    image: `${url}/images/og-default.jpg`,
     address: {
       '@type': 'PostalAddress',
-      streetAddress: partner.location.address.split(',')[0],
-      postalCode: partner.location.postalCode,
-      addressLocality: partner.location.town,
-      addressRegion: partner.location.canton,
+      streetAddress: atelier.location.street,
+      postalCode: atelier.location.postalCode,
+      addressLocality: atelier.location.town,
+      addressRegion: atelier.location.canton,
       addressCountry: 'CH',
     },
     geo: {
       '@type': 'GeoCoordinates',
-      latitude: partner.location.coordinates.lat,
-      longitude: partner.location.coordinates.lng,
+      latitude: atelier.location.coordinates.lat,
+      longitude: atelier.location.coordinates.lng,
     },
+    openingHours: opening,
     priceRange: 'CHF',
-    areaServed: partner.location.servedAreas,
-    ...(partner.ratings
-      ? {
-          aggregateRating: {
-            '@type': 'AggregateRating',
-            ratingValue: partner.ratings.average,
-            reviewCount: partner.ratings.count,
-          },
-        }
-      : {}),
+    areaServed: atelier.location.servedAreas.map((name) => ({
+      '@type': 'City',
+      name,
+    })),
+    knowsAbout: ['Outdoor-Reparatur', 'Daunenjacke', 'Hardshell', 'Rucksack', 'Zelt'],
+    sameAs: [atelier.contact.instagram].filter(Boolean),
   };
 }
 
-export function organizationJsonLd() {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: brand.name,
-    url: platform.siteUrl,
-    logo: `${platform.siteUrl}/images/logo.svg`,
-    sameAs: Object.values(platform.social).filter(Boolean),
-  };
+/** Hilfsfunktion: Title-Builder, der Atelier-Namen an den Seitentitel hängt. */
+export function pageTitle(title: string): string {
+  return `${title} · ${atelier.name}`;
 }

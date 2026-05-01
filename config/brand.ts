@@ -1,5 +1,7 @@
+import { atelier } from '@/content/atelier';
+
 export const brand = {
-  name: 'Gipfelnaht',
+  name: atelier.name,
   tagline: 'Deine Ausrüstung. Heute gebracht, morgen getragen.',
   domain: 'gipfelnaht.ch',
   colors: {
@@ -19,7 +21,7 @@ export const brand = {
   },
   logo: {
     path: '/images/logo.svg',
-    alt: 'Gipfelnaht — Reparaturen für Bergsport-Ausrüstung',
+    alt: `${atelier.name} — Reparaturen für Bergsport-Ausrüstung in ${atelier.location.town}`,
   },
 } as const;
 

@@ -1,16 +1,27 @@
-import { platform } from '@/config/platform';
+import { atelier } from '@/content/atelier';
 
 interface Props {
   compact?: boolean;
 }
 
+/**
+ * Drei kleine Stats: Reparaturen, eingespartes CO₂, Jahre im Handwerk.
+ * Quelle: /content/atelier.ts (manuell gepflegt).
+ */
 export function SustainabilityCounter({ compact = false }: Props) {
-  const { repairsCompleted, co2SavedKg, activePartners } = platform.impact;
-
   const items = [
-    { value: repairsCompleted.toLocaleString('de-CH'), label: 'Reparaturen abgeschlossen' },
-    { value: `${co2SavedKg.toLocaleString('de-CH')} kg`, label: 'CO₂ eingespart (geschätzt)' },
-    { value: activePartners.toString(), label: 'Partner im Netzwerk' },
+    {
+      value: atelier.sustainability.repairsCompleted.toLocaleString('de-CH'),
+      label: 'Reparaturen seit 2022',
+    },
+    {
+      value: `${atelier.sustainability.co2SavedKg.toLocaleString('de-CH')} kg`,
+      label: 'CO₂ eingespart (geschätzt)',
+    },
+    {
+      value: `${atelier.yearsExperience}+`,
+      label: 'Jahre an der Industriemaschine',
+    },
   ];
 
   return (

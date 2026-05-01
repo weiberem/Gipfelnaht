@@ -9,9 +9,9 @@ import {
   Path,
   Circle,
 } from '@react-pdf/renderer';
-import type { Partner } from '@/types';
+import { atelier } from '@/content/atelier';
 import { brand } from '@/config/brand';
-import { platform } from '@/config/platform';
+import { pricing } from '@/content/pricing';
 
 const C = brand.colors;
 
@@ -34,10 +34,16 @@ const styles = StyleSheet.create({
   },
   logoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   wordmark: { fontSize: 22, fontFamily: 'Helvetica-Bold', color: C.forestDark },
-  location: { fontSize: 8, color: C.stone, letterSpacing: 1, textTransform: 'uppercase', marginTop: 2 },
-  partnerBlock: { textAlign: 'right' },
-  partnerName: { fontSize: 10, fontFamily: 'Helvetica-Bold', color: C.forestDark },
-  partnerAddr: { fontSize: 8, color: C.stone, marginTop: 2 },
+  location: {
+    fontSize: 8,
+    color: C.stone,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    marginTop: 2,
+  },
+  contactBlock: { textAlign: 'right' },
+  contactPrimary: { fontSize: 9, color: C.forestDark, fontFamily: 'Helvetica-Bold' },
+  contactSecondary: { fontSize: 8, color: C.stone, marginTop: 2 },
   headline: {
     fontSize: 17,
     fontFamily: 'Helvetica-Bold',
@@ -82,7 +88,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   footerText: { fontSize: 7, color: C.stone, maxWidth: 320 },
-  night: { color: C.forestDark, backgroundColor: C.night, padding: 2, borderRadius: 2 },
+  night: {
+    color: C.forestDark,
+    backgroundColor: C.night,
+    paddingHorizontal: 3,
+    paddingVertical: 1,
+    borderRadius: 2,
+  },
 });
 
 function LogoPdf() {
@@ -106,38 +118,59 @@ function LogoPdf() {
 }
 
 interface Props {
-  partner: Partner;
   qrDataUrl: string;
-  profileUrl: string;
+  contactUrl: string;
 }
 
-export function TagDocument({ partner, qrDataUrl, profileUrl }: Props) {
-  const repairTypes = ['Riss', 'Reissverschluss-Schieber', 'Naht', 'Gummizug', 'Klett', 'Patch'];
+const repairTypes = [
+  'Riss / Loch',
+  'Reissverschluss-Schieber',
+  'Reissverschluss komplett',
+  'Naht aufgegangen',
+  'Nahtband / Membran',
+  'Daune nachfüllen',
+  'Gummizug / Kordel',
+  'Klett / Druckknopf',
+  'Patch / Aufnäher',
+  'Anderes',
+];
+
+export function TagDocument({ qrDataUrl, contactUrl }: Props) {
+  const np = atelier.services.nightrepair;
+  const paymentMethods = [
+    atelier.payment.twint && 'Twint',
+    atelier.payment.card && 'Karte',
+    atelier.payment.cash && 'bar',
+  ]
+    .filter(Boolean)
+    .join(', ');
 
   return (
-    <Document title={`Gipfelnaht Tag — ${partner.businessName}`}>
+    <Document title={`${atelier.name} — Reparatur-Tag`}>
       {/* VORDERSEITE */}
       <Page size="A5" style={styles.page}>
         <View style={styles.header}>
           <View style={styles.logoRow}>
             <LogoPdf />
             <View>
-              <Text style={styles.wordmark}>Gipfelnaht</Text>
-              <Text style={styles.location}>{partner.location.town}</Text>
+              <Text style={styles.wordmark}>{atelier.name}</Text>
+              <Text style={styles.location}>{atelier.location.town}</Text>
             </View>
           </View>
-          <View style={styles.partnerBlock}>
-            <Text style={styles.partnerName}>{partner.businessName}</Text>
-            <Text style={styles.partnerAddr}>{partner.location.address}</Text>
-            {partner.contact.phone && (
-              <Text style={styles.partnerAddr}>{partner.contact.phone}</Text>
-            )}
+          <View style={styles.contactBlock}>
+            <Text style={styles.contactPrimary}>{atelier.location.address}</Text>
+            <Text style={styles.contactSecondary}>
+              {atelier.location.postalCode} {atelier.location.town}
+            </Text>
+            <Text style={styles.contactSecondary}>{atelier.contact.phoneDisplay}</Text>
+            <Text style={styles.contactSecondary}>{atelier.contact.email}</Text>
           </View>
         </View>
 
         <Text style={styles.headline}>Reparatur-Auftrag</Text>
         <Text style={styles.subheadline}>
           Ausfüllen und mit der Ausrüstung in die Sammelbox oder persönlich abgeben.
+          Antwort innerhalb 12 Stunden.
         </Text>
 
         <Text style={styles.sectionTitle}>Deine Kontaktdaten</Text>
@@ -162,24 +195,29 @@ export function TagDocument({ partner, qrDataUrl, profileUrl }: Props) {
             </View>
           ))}
         </View>
-        <View style={[styles.box, { minHeight: 48 }]}>
-          <Text style={styles.fieldHint}>Beschreibung (Ort am Stück, Grösse des Schadens):</Text>
+
+        <View style={[styles.box, { minHeight: 50, marginTop: 4 }]}>
+          <Text style={styles.fieldHint}>
+            Beschreibung (Stelle am Stück, Grösse des Schadens, Material wenn bekannt):
+          </Text>
         </View>
         <Text style={[styles.fieldHint, { marginTop: 4 }]}>
-          Falls Fotos hilfreich sind: per WhatsApp an {partner.contact.whatsapp ?? partner.contact.phone ?? partner.contact.email}
+          Fotos sind hilfreich — schick sie per WhatsApp an {atelier.contact.whatsapp}.
         </Text>
 
         <Text style={styles.sectionTitle}>Gewünschter Service</Text>
         <View style={styles.checkRow}>
           <View style={styles.checkItem}>
             <View style={styles.checkBox} />
-            <Text style={styles.checkLabel}>Standard (24–48h)</Text>
+            <Text style={styles.checkLabel}>
+              Standard ({atelier.capacity.typicalTurnaround})
+            </Text>
           </View>
-          {partner.services.nightrepair.available && (
+          {np.available && (
             <View style={styles.checkItem}>
               <View style={styles.checkBox} />
               <Text style={[styles.checkLabel, styles.night]}>
-                Nightrepair (+CHF {partner.services.nightrepair.surcharge})
+                Nightrepair (+CHF {np.surcharge})
               </Text>
             </View>
           )}
@@ -191,14 +229,14 @@ export function TagDocument({ partner, qrDataUrl, profileUrl }: Props) {
 
         <View style={styles.row}>
           <View style={[styles.field, { flex: 1 }]}>
-            <Text style={styles.fieldLabel}>Gewünschter Abholtermin</Text>
+            <Text style={styles.fieldLabel}>Wunsch-Termin (Abholung)</Text>
           </View>
           <View style={[styles.field, { flex: 1 }]}>
             <Text style={styles.fieldLabel}>Besondere Hinweise</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Von der Werkstatt auszufüllen</Text>
+        <Text style={styles.sectionTitle}>Vom Atelier auszufüllen</Text>
         <View style={styles.row}>
           <View style={[styles.field, { flex: 1 }]}>
             <Text style={styles.fieldLabel}>Auftragsnummer</Text>
@@ -210,8 +248,8 @@ export function TagDocument({ partner, qrDataUrl, profileUrl }: Props) {
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            {platform.legalName} — {profileUrl}
-            {'\n'}Fragen: {platform.contact.email}
+            {atelier.legalName} — {contactUrl}
+            {'\n'}{atelier.contact.email} · {atelier.contact.phoneDisplay}
           </Text>
           <Image src={qrDataUrl} style={{ width: 50, height: 50 }} />
         </View>
@@ -222,29 +260,31 @@ export function TagDocument({ partner, qrDataUrl, profileUrl }: Props) {
         <View style={styles.header}>
           <View style={styles.logoRow}>
             <LogoPdf />
-            <Text style={styles.wordmark}>Gipfelnaht</Text>
+            <Text style={styles.wordmark}>{atelier.name}</Text>
           </View>
-          <Text style={styles.partnerAddr}>Rückseite</Text>
+          <Text style={styles.contactSecondary}>Rückseite — bitte aufbewahren</Text>
         </View>
 
-        <Text style={styles.headline}>Zum Ablauf</Text>
+        <Text style={styles.headline}>Ablauf</Text>
         <Text style={{ fontSize: 9, marginBottom: 10, color: C.stone }}>
-          1. Du füllst die Vorderseite aus und gibst sie mit der Ausrüstung ab.{'\n'}
-          2. Der Partner meldet sich innerhalb von 12 Stunden mit Einschätzung + Offerte.{'\n'}
-          3. Reparatur wird durchgeführt. Standard 24–48h.
-          {partner.services.nightrepair.available ? ' Nightrepair: Annahme bis ' + partner.services.nightrepair.acceptanceDeadline + ', Abholung ab ' + partner.services.nightrepair.pickupFrom + '.' : ''}
-          {'\n'}4. Du zahlst bei Abholung direkt beim Partner (Twint, Karte, bar — nach Partner).
+          1. Tag ausfüllen, mit der Ausrüstung in die Sammelbox oder persönlich abgeben.{'\n'}
+          2. Antwort innerhalb 12 Stunden mit Einschätzung und Preisrahmen.{'\n'}
+          3. Reparatur — Standard {atelier.capacity.typicalTurnaround}.
+          {np.available
+            ? ` Nightrepair: Annahme bis ${np.acceptanceDeadline}, Abholung ab ${np.pickupFrom}.`
+            : ''}
+          {'\n'}4. Abholung und Bezahlung im Atelier ({paymentMethods}).
         </Text>
 
-        <Text style={styles.sectionTitle}>Wichtige Hinweise</Text>
+        <Text style={styles.sectionTitle}>Garantie</Text>
         <Text style={{ fontSize: 9, marginBottom: 6 }}>
-          Gipfelnaht ist Vermittler. Der Reparaturvertrag kommt direkt zwischen dir und
-          {' '}{partner.businessName} zustande. Auf die Arbeit gewährt der Partner mindestens 6 Monate Garantie.
-          Details: {platform.siteUrl}/agb.
+          6 Monate Garantie auf jede Naht und jeden Material­einsatz. Sicherheits­ausrüstung
+          (Klettergurte, Seile, Helme, Lawinen-Airbags, Paragliding-Kappen) wird grundsätzlich
+          nicht repariert — bitte direkt zum Hersteller.
         </Text>
 
         <Text style={styles.sectionTitle}>Preisrahmen (orientierend)</Text>
-        {partner.pricing.slice(0, 5).map((p, i) => (
+        {pricing.slice(0, 6).map((p, i) => (
           <View
             key={i}
             style={{
@@ -262,18 +302,22 @@ export function TagDocument({ partner, qrDataUrl, profileUrl }: Props) {
             </Text>
           </View>
         ))}
+        <Text style={[styles.fieldHint, { marginTop: 6 }]}>
+          Komplexere Reparaturen nach individueller Offerte. Vollständige Liste:{' '}
+          {atelier.siteUrl}/preise
+        </Text>
 
-        <Text style={styles.sectionTitle}>Unser Nachhaltigkeits-Versprechen</Text>
+        <Text style={styles.sectionTitle}>Nachhaltigkeits-Versprechen</Text>
         <Text style={{ fontSize: 9 }}>
-          Diese Reparatur spart im Schnitt rund 25 kg CO₂ gegenüber einem Neukauf. Stoffreste werden
-          wiederverwendet. Transparent und ohne Greenwashing.
+          Eine reparierte Daunenjacke spart rund 25 kg CO₂ gegenüber einem Neukauf. Stoffreste
+          gehen ins Patch-Lager, alte Reissverschlüsse ins Ersatzteil-Regal. Reparieren statt
+          wegwerfen — ohne Greenwashing.
         </Text>
 
         <View style={styles.footer}>
           <Text style={styles.footerText}>
-            {partner.businessName} — {partner.location.address}
-            {'\n'}{partner.contact.email}
-            {partner.contact.phone ? ' · ' + partner.contact.phone : ''}
+            {atelier.location.address}, {atelier.location.postalCode} {atelier.location.town}
+            {'\n'}{atelier.contact.email} · {atelier.contact.phoneDisplay}
           </Text>
           <Image src={qrDataUrl} style={{ width: 50, height: 50 }} />
         </View>

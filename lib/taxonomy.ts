@@ -1,4 +1,4 @@
-import type { Specialty, Material, RepairType, ServiceOption } from '@/types';
+import type { Specialty, Material, RepairType, ServiceOption, ProductCategory } from '@/types';
 
 export const specialtyLabels: Record<Specialty, string> = {
   daunenjacke: 'Daunenjacke',
@@ -42,10 +42,21 @@ export const materialLabels: Record<Material, string> = {
   dyneema: 'Dyneema',
   cordura: 'Cordura',
   stretch: 'Stretch-Material',
-  'softshell-material': 'Softshell-Material',
+  'softshell-material': 'Softshell',
   leder: 'Leder',
   nahtband: 'Nahtband',
   'paragliding-stoff': 'Paragliding-Stoff',
+};
+
+export const materialDescriptions: Partial<Record<Material, string>> = {
+  'gore-tex': 'Membran mit Heisspress-Nahtband, Reparatur unter Vakuum.',
+  event: 'Vergleichbare Membran wie Gore-Tex, gleiches Verfahren.',
+  pertex: 'Leichte Aussenstoffe, ideal für Daunenjacken.',
+  daune: 'Auffüllen mit zertifizierter Gänse- oder Entendaune (RDS).',
+  primaloft: 'Synthetik-Isolation, Risse werden mit Patch + Naht versorgt.',
+  cordura: 'Strapazierfähiges Rucksack-Gewebe — fast alles flickbar.',
+  dyneema: 'Hochfeste Faser, spezielle Nadeln und Garne nötig.',
+  nahtband: 'Erneuerung mit Heisspresse, passend zur Membran.',
 };
 
 export const repairTypeLabels: Record<RepairType, string> = {
@@ -70,6 +81,23 @@ export const repairTypeLabels: Record<RepairType, string> = {
 export const serviceLabels: Record<ServiceOption, string> = {
   sammelbox: 'Sammelbox-Einwurf',
   'personal-dropoff': 'Persönliche Abgabe',
-  pickup: 'Abholservice',
+  pickup: 'Abholung',
   nightrepair: 'Nightrepair',
+};
+
+export const serviceShortLabels: Record<ServiceOption, string> = {
+  sammelbox: 'Sammelbox',
+  'personal-dropoff': 'Abgabe',
+  pickup: 'Abholung',
+  nightrepair: 'Nightrepair',
+};
+
+export const productCategoryLabels: Record<ProductCategory, string> = {
+  daunenjacke: 'Daunenjacke',
+  hardshell: 'Hardshell / Regenjacke',
+  hose: 'Hose / Skihose',
+  rucksack: 'Rucksack',
+  zelt: 'Zelt',
+  schlafsack: 'Schlafsack',
+  anderes: 'Anderes',
 };

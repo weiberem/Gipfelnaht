@@ -1,18 +1,29 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getPartnerBySlug } from '@/lib/partners';
 import { sendInquiry } from '@/lib/inquiries';
+import { availableServices } from '@/content/atelier';
+import type { ServiceOption } from '@/types';
+
+const productKeys = [
+  'daunenjacke',
+  'hardshell',
+  'hose',
+  'rucksack',
+  'zelt',
+  'schlafsack',
+  'anderes',
+] as const;
+
+const allServiceKeys = ['sammelbox', 'personal-dropoff', 'pickup', 'nightrepair'] as const;
 
 const schema = z.object({
-  partnerSlug: z.string(),
   name: z.string().min(2),
   email: z.string().email(),
   phone: z.string().min(4),
-  category: z.string().min(1),
-  description: z.string().min(10),
-  preferredService: z.enum(['sammelbox', 'personal-dropoff', 'pickup', 'nightrepair']),
+  product: z.enum(productKeys),
+  description: z.string().min(10).max(2000),
+  preferredService: z.enum(allServiceKeys),
   preferredDate: z.string().optional(),
-  hasPhotos: z.boolean(),
   acceptPrivacy: z.literal(true),
 });
 
@@ -32,35 +43,32 @@ export async function POST(req: Request) {
     );
   }
 
-  const partner = await getPartnerBySlug(parsed.data.partnerSlug);
-  if (!partner) {
-    return NextResponse.json({ error: 'Partner nicht gefunden' }, { status: 404 });
+  // Service-Wahl gegen die tatsächlich angebotenen Services prüfen.
+  const allowed = new Set<ServiceOption>(availableServices());
+  if (!allowed.has(parsed.data.preferredService)) {
+    return NextResponse.json(
+      { error: 'Diesen Service bieten wir aktuell nicht an.' },
+      { status: 422 }
+    );
   }
 
   try {
-    await sendInquiry(
-      {
-        partnerSlug: parsed.data.partnerSlug,
-        customer: {
-          name: parsed.data.name,
-          email: parsed.data.email,
-          phone: parsed.data.phone,
-        },
-        item: {
-          category: parsed.data.category,
-          description: parsed.data.description,
-        },
-        preferredService: parsed.data.preferredService,
-        preferredDate: parsed.data.preferredDate,
-        hasPhotos: parsed.data.hasPhotos,
-        acceptPrivacy: parsed.data.acceptPrivacy,
-        createdAt: new Date().toISOString(),
+    await sendInquiry({
+      customer: {
+        name: parsed.data.name,
+        email: parsed.data.email,
+        phone: parsed.data.phone,
       },
-      partner
-    );
+      product: parsed.data.product,
+      description: parsed.data.description,
+      preferredService: parsed.data.preferredService,
+      preferredDate: parsed.data.preferredDate,
+      acceptPrivacy: parsed.data.acceptPrivacy,
+      createdAt: new Date().toISOString(),
+    });
     return NextResponse.json({ ok: true });
   } catch (e) {
-    console.error('[api/inquiry] send failed', e);
+    console.error('[api/inquiry] Versand fehlgeschlagen', e);
     return NextResponse.json({ error: 'Versand fehlgeschlagen' }, { status: 500 });
   }
 }

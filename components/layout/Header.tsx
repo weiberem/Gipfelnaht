@@ -4,15 +4,15 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Logo } from '@/components/brand/Logo';
-import { LanguageSwitcher } from './LanguageSwitcher';
+import { atelier } from '@/content/atelier';
 import { cn } from '@/lib/utils';
 
 const nav = [
-  { href: '/partner', label: 'Partner finden' },
-  { href: '/nightrepair', label: 'Nightrepair' },
-  { href: '/angebot', label: 'Was reparieren wir?' },
-  { href: '/nachhaltigkeit', label: 'Nachhaltigkeit' },
+  { href: '/angebot', label: 'Angebot' },
+  { href: '/preise', label: 'Preise' },
   { href: '/so-funktionierts', label: "So funktioniert's" },
+  { href: '/ueber-mich', label: 'Über mich' },
+  { href: '/kontakt', label: 'Kontakt' },
 ];
 
 export function Header() {
@@ -21,11 +21,11 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-cream/90 backdrop-blur">
       <div className="container-page flex h-16 items-center justify-between md:h-20">
-        <Link href="/" aria-label="Gipfelnaht Startseite">
-          <Logo size="sm" />
+        <Link href="/" aria-label={`${atelier.name} Startseite`}>
+          <Logo size="sm" location={atelier.location.town} />
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex">
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Hauptnavigation">
           {nav.map((item) => (
             <Link
               key={item.href}
@@ -38,13 +38,15 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <LanguageSwitcher />
-          <Link href="/partner" className="hidden lg:inline-flex btn-primary py-2.5 px-4 text-sm">
-            Jetzt Partner finden
+          <Link
+            href="/kontakt"
+            className="hidden lg:inline-flex btn-primary py-2.5 px-4 text-sm"
+          >
+            Anfrage stellen
           </Link>
           <button
             type="button"
-            aria-label="Menu"
+            aria-label={open ? 'Menü schliessen' : 'Menü öffnen'}
             aria-expanded={open}
             onClick={() => setOpen((o) => !o)}
             className="lg:hidden rounded p-2 text-forest hover:bg-cream-warm"
@@ -60,7 +62,7 @@ export function Header() {
           open ? 'max-h-96' : 'max-h-0'
         )}
       >
-        <nav className="container-page flex flex-col gap-1 py-4">
+        <nav className="container-page flex flex-col gap-1 py-4" aria-label="Mobile Navigation">
           {nav.map((item) => (
             <Link
               key={item.href}
@@ -72,18 +74,11 @@ export function Header() {
             </Link>
           ))}
           <Link
-            href="/partner-werden"
-            className="mt-2 rounded px-3 py-2.5 text-sm text-stone hover:bg-cream-warm"
-            onClick={() => setOpen(false)}
-          >
-            Partner werden
-          </Link>
-          <Link
-            href="/partner"
+            href="/kontakt"
             className="btn-primary mt-2 w-full justify-center"
             onClick={() => setOpen(false)}
           >
-            Jetzt Partner finden
+            Anfrage stellen
           </Link>
         </nav>
       </div>

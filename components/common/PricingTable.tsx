@@ -15,9 +15,13 @@ export function PricingTable({ items, compact = false }: Props) {
       <table className="w-full text-sm">
         <thead className="bg-cream-warm text-left text-xs uppercase tracking-wider text-stone">
           <tr>
-            <th className="px-4 py-2.5 font-medium">Leistung</th>
-            <th className="px-4 py-2.5 text-right font-medium">Preis</th>
-            {!compact && <th className="hidden px-4 py-2.5 font-medium md:table-cell">Hinweis</th>}
+            <th scope="col" className="px-4 py-2.5 font-medium">Leistung</th>
+            <th scope="col" className="px-4 py-2.5 text-right font-medium">Preis</th>
+            {!compact && (
+              <th scope="col" className="hidden px-4 py-2.5 font-medium md:table-cell">
+                Hinweis
+              </th>
+            )}
           </tr>
         </thead>
         <tbody className="divide-y divide-border bg-white">

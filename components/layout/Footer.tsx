@@ -1,25 +1,23 @@
 import Link from 'next/link';
-import { Instagram, Mail, MapPin } from 'lucide-react';
+import { Instagram, Mail, MapPin, Phone } from 'lucide-react';
 import { Logo } from '@/components/brand/Logo';
-import { platform } from '@/config/platform';
+import { atelier } from '@/content/atelier';
 
 const columns = [
   {
-    title: 'Plattform',
+    title: 'Atelier',
     links: [
-      { href: '/partner', label: 'Partner finden' },
-      { href: '/nightrepair', label: 'Nightrepair' },
-      { href: '/angebot', label: 'Was reparieren wir?' },
-      { href: '/nachhaltigkeit', label: 'Nachhaltigkeit' },
+      { href: '/angebot', label: 'Was wir reparieren' },
+      { href: '/preise', label: 'Preise' },
       { href: '/so-funktionierts', label: "So funktioniert's" },
+      { href: '/ueber-mich', label: 'Über mich' },
     ],
   },
   {
-    title: 'Für Partner',
+    title: 'Kontakt',
     links: [
-      { href: '/partner-werden', label: 'Partner werden' },
-      { href: '/ueber-uns', label: 'Über uns' },
-      { href: '/faq', label: 'FAQ' },
+      { href: '/kontakt', label: 'Anfrage stellen' },
+      { href: '/api/tag-pdf', label: 'Reparatur-Tag (PDF)' },
     ],
   },
   {
@@ -38,22 +36,33 @@ export function Footer() {
     <footer className="mt-20 border-t border-border bg-cream-warm">
       <div className="container-page grid gap-10 py-14 md:grid-cols-[1.3fr_1fr_1fr_1fr]">
         <div>
-          <Logo size="sm" />
+          <Logo size="sm" location={atelier.location.town} />
           <p className="mt-4 max-w-sm text-sm text-stone leading-relaxed">
-            Gipfelnaht vernetzt lokale Näh-Spezialist:innen in den Schweizer Alpen
-            mit Bergsportler:innen, die ihre Ausrüstung reparieren statt ersetzen wollen.
+            {atelier.shortBio}
           </p>
           <div className="mt-5 space-y-2 text-sm text-stone">
-            <div className="flex items-center gap-2">
-              <MapPin size={14} />
-              <span>{platform.owner.town}, {platform.owner.canton}</span>
+            <div className="flex items-start gap-2">
+              <MapPin size={14} className="mt-0.5 shrink-0" />
+              <span>
+                {atelier.location.address}
+                <br />
+                {atelier.location.postalCode} {atelier.location.town},{' '}
+                {atelier.location.canton}
+              </span>
             </div>
             <a
-              href={`mailto:${platform.contact.email}`}
+              href={`tel:${atelier.contact.phone}`}
+              className="flex items-center gap-2 hover:text-forest"
+            >
+              <Phone size={14} />
+              {atelier.contact.phoneDisplay}
+            </a>
+            <a
+              href={`mailto:${atelier.contact.email}`}
               className="flex items-center gap-2 hover:text-forest"
             >
               <Mail size={14} />
-              {platform.contact.email}
+              {atelier.contact.email}
             </a>
           </div>
         </div>
@@ -77,12 +86,12 @@ export function Footer() {
       <div className="border-t border-border">
         <div className="container-page flex flex-col gap-3 py-5 md:flex-row md:items-center md:justify-between">
           <p className="text-xs text-stone">
-            © {year} {platform.legalName}. Handwerk aus den Alpen.
+            © {year} {atelier.legalName}. Handwerk aus den Alpen.
           </p>
           <div className="flex items-center gap-4 text-stone">
-            {platform.social.instagram && (
+            {atelier.contact.instagram && (
               <a
-                href={platform.social.instagram}
+                href={atelier.contact.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"

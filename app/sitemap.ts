@@ -1,39 +1,24 @@
 import type { MetadataRoute } from 'next';
-import { getAllPartnerSlugs } from '@/lib/partners';
-import { platform } from '@/config/platform';
+import { atelier } from '@/content/atelier';
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const staticRoutes = [
-    '',
-    '/partner',
-    '/nightrepair',
-    '/angebot',
-    '/nachhaltigkeit',
-    '/so-funktionierts',
-    '/partner-werden',
-    '/ueber-uns',
-    '/faq',
-    '/kontakt',
-    '/impressum',
-    '/datenschutz',
-    '/agb',
+export default function sitemap(): MetadataRoute.Sitemap {
+  const routes = [
+    { path: '', priority: 1, freq: 'weekly' as const },
+    { path: '/angebot', priority: 0.9, freq: 'monthly' as const },
+    { path: '/preise', priority: 0.9, freq: 'monthly' as const },
+    { path: '/so-funktionierts', priority: 0.8, freq: 'monthly' as const },
+    { path: '/ueber-mich', priority: 0.7, freq: 'monthly' as const },
+    { path: '/kontakt', priority: 0.9, freq: 'monthly' as const },
+    { path: '/impressum', priority: 0.2, freq: 'yearly' as const },
+    { path: '/datenschutz', priority: 0.2, freq: 'yearly' as const },
+    { path: '/agb', priority: 0.2, freq: 'yearly' as const },
   ];
   const now = new Date();
 
-  const partnerSlugs = await getAllPartnerSlugs();
-
-  return [
-    ...staticRoutes.map((r) => ({
-      url: `${platform.siteUrl}${r}`,
-      lastModified: now,
-      changeFrequency: 'weekly' as const,
-      priority: r === '' ? 1 : 0.7,
-    })),
-    ...partnerSlugs.map((slug) => ({
-      url: `${platform.siteUrl}/partner/${slug}`,
-      lastModified: now,
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
-    })),
-  ];
+  return routes.map((r) => ({
+    url: `${atelier.siteUrl}${r.path}`,
+    lastModified: now,
+    changeFrequency: r.freq,
+    priority: r.priority,
+  }));
 }

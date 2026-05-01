@@ -1,45 +1,48 @@
 import { Resend } from 'resend';
-import type { Inquiry, PartnerApplication } from '@/types';
-import type { Partner } from '@/types';
-import { platform } from '@/config/platform';
-import { serviceLabels } from './taxonomy';
+import type { Inquiry } from '@/types';
+import { atelier } from '@/content/atelier';
+import { serviceLabels, productCategoryLabels } from './taxonomy';
 
 const resendClient = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
-const FROM = process.env.EMAIL_FROM ?? 'Gipfelnaht <hallo@gipfelnaht.ch>';
-const PLATFORM_CC = process.env.EMAIL_PLATFORM ?? 'hallo@gipfelnaht.ch';
+const FROM = process.env.EMAIL_FROM ?? `${atelier.name} <hallo@${new URL(atelier.siteUrl).hostname}>`;
+const ATELIER_INBOX = process.env.EMAIL_PLATFORM ?? atelier.contact.email;
 
 /**
- * Phase 1: verschickt E-Mails via Resend.
- * Phase 2: legt zusätzlich einen Supabase-Record an und verschickt weiter.
+ * Verschickt eine Anfrage:
+ *   1. Mail an das Atelier-Postfach (Reply-To = Kunde)
+ *   2. Bestätigung an Kunde
+ *
+ * Wenn RESEND_API_KEY fehlt, wird die Anfrage nur ins Server-Log geschrieben —
+ * die UI zeigt dem Kunden trotzdem ein Erfolgs-Feedback. Auf diese Weise kann
+ * die Site lokal ohne Mail-Setup getestet werden.
  */
-export async function sendInquiry(inquiry: Inquiry, partner: Partner): Promise<void> {
+export async function sendInquiry(inquiry: Inquiry): Promise<void> {
+  const serviceLabel = serviceLabels[inquiry.preferredService];
+  const productLabel = productCategoryLabels[inquiry.product];
+
   if (!resendClient) {
-    console.warn('[inquiries] RESEND_API_KEY fehlt — Mail-Versand wird geloggt statt gesendet.');
-    console.log('[inquiries] Inquiry:', inquiry);
+    console.warn('[inquiries] RESEND_API_KEY fehlt — Mailversand wird übersprungen.');
+    console.log('[inquiries] Anfrage:', { ...inquiry, productLabel, serviceLabel });
     return;
   }
 
-  const customerSubject = `Neue Anfrage: ${inquiry.item.category} — ${inquiry.customer.name}`;
-  const serviceLabel = serviceLabels[inquiry.preferredService];
-
-  const partnerBody = [
-    `Neue Reparatur-Anfrage über Gipfelnaht`,
+  const atelierBody = [
+    `Neue Reparatur-Anfrage`,
     ``,
     `Kund:in: ${inquiry.customer.name}`,
     `E-Mail: ${inquiry.customer.email}`,
     `Telefon: ${inquiry.customer.phone}`,
     ``,
-    `Produkt: ${inquiry.item.category}`,
-    `Schaden: ${inquiry.item.description}`,
+    `Produkt: ${productLabel}`,
+    `Schaden: ${inquiry.description}`,
     ``,
     `Gewünschter Service: ${serviceLabel}`,
     inquiry.preferredDate ? `Wunsch-Termin: ${inquiry.preferredDate}` : '',
-    inquiry.hasPhotos ? `Fotos folgen per WhatsApp / Mail.` : '',
     ``,
-    `Bitte melde dich direkt bei der Kundin / dem Kunden — innerhalb 12 Stunden.`,
+    `Auf Antwort innerhalb 12 Stunden warten — Reply geht direkt an die Kund:in.`,
     ``,
-    `— Gipfelnaht`,
+    `— ${atelier.name}`,
   ]
     .filter(Boolean)
     .join('\n');
@@ -47,19 +50,21 @@ export async function sendInquiry(inquiry: Inquiry, partner: Partner): Promise<v
   const customerBody = [
     `Hoi ${inquiry.customer.name}`,
     ``,
-    `Danke für deine Anfrage bei ${partner.businessName} (${partner.location.town}).`,
-    ``,
-    `Wir haben deine Nachricht weitergeleitet. Der Partner meldet sich bei dir innerhalb 12 Stunden mit einer Einschätzung und dem weiteren Vorgehen.`,
+    `Danke für deine Anfrage bei ${atelier.name}. Ich habe deine Nachricht erhalten und melde mich innerhalb von 12 Stunden mit einer Einschätzung und dem Preisrahmen.`,
     ``,
     `Deine Angaben:`,
-    `– Produkt: ${inquiry.item.category}`,
+    `– Produkt: ${productLabel}`,
+    `– Schaden: ${inquiry.description}`,
     `– Service: ${serviceLabel}`,
     inquiry.preferredDate ? `– Wunsch-Termin: ${inquiry.preferredDate}` : '',
     ``,
-    `Falls du nach 12 Stunden nichts gehört hast, schreib uns: ${PLATFORM_CC}`,
+    `Falls du Fotos hast, schick sie mir per WhatsApp (${atelier.contact.whatsapp}) oder direkt als Antwort auf diese Mail. Je mehr Details, desto präziser kann ich den Aufwand abschätzen.`,
+    ``,
+    `Wenn du nach 12 Stunden nichts gehört hast, ruf einfach durch: ${atelier.contact.phoneDisplay}.`,
     ``,
     `Liebe Grüsse`,
-    `Das Gipfelnaht-Team`,
+    `${atelier.owner}`,
+    `${atelier.name} · ${atelier.location.town}`,
   ]
     .filter(Boolean)
     .join('\n');
@@ -67,56 +72,18 @@ export async function sendInquiry(inquiry: Inquiry, partner: Partner): Promise<v
   await Promise.all([
     resendClient.emails.send({
       from: FROM,
-      to: partner.contact.email,
-      cc: PLATFORM_CC,
+      to: ATELIER_INBOX,
       replyTo: inquiry.customer.email,
-      subject: customerSubject,
-      text: partnerBody,
+      subject: `Neue Anfrage: ${productLabel} — ${inquiry.customer.name}`,
+      text: atelierBody,
     }),
     resendClient.emails.send({
       from: FROM,
       to: inquiry.customer.email,
-      subject: `Deine Anfrage bei ${partner.businessName}`,
+      subject: `Deine Anfrage bei ${atelier.name}`,
       text: customerBody,
     }),
   ]);
-}
-
-export async function sendPartnerApplication(app: PartnerApplication): Promise<void> {
-  if (!resendClient) {
-    console.warn('[inquiries] RESEND_API_KEY fehlt — Mail-Versand wird geloggt statt gesendet.');
-    console.log('[inquiries] Application:', app);
-    return;
-  }
-
-  const body = [
-    `Neue Partner-Bewerbung`,
-    ``,
-    `Name: ${app.name}`,
-    `E-Mail: ${app.email}`,
-    app.phone ? `Telefon: ${app.phone}` : '',
-    `Ort: ${app.location}`,
-    ``,
-    `Vorerfahrung:`,
-    app.experience,
-    ``,
-    `Motivation:`,
-    app.motivation,
-    ``,
-    app.portfolioUrl ? `Portfolio: ${app.portfolioUrl}` : '',
-    ``,
-    `— Gipfelnaht`,
-  ]
-    .filter(Boolean)
-    .join('\n');
-
-  await resendClient.emails.send({
-    from: FROM,
-    to: platform.contact.email,
-    replyTo: app.email,
-    subject: `Partner-Bewerbung: ${app.name} (${app.location})`,
-    text: body,
-  });
 }
 
 export { resendClient };
